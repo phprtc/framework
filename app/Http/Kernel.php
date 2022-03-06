@@ -13,13 +13,11 @@ class Kernel extends \RTC\Http\Kernel
     protected HttpHandlerInterface $handler;
 
     protected array $httpMiddlewares = [
-        GidadoMiddleware::class,
         CounterMiddleware::class,
     ];
 
     protected array $routeMiddlewares = [
         'test' => TestRouteMiddleware::class,
-        'hello' => HelloMiddleware::class,
     ];
 
     protected bool $useDefaultMiddlewares = true;

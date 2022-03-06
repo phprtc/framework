@@ -2,9 +2,10 @@
 
 namespace App\Websocket;
 
-use RTC\Websocket\Kernel;
+use App\Websocket\Handlers\ChatWebsocketHandler;
+use App\Websocket\Handlers\TestWebsocketHandler;
 
-class WSKernel extends Kernel
+class Kernel extends \RTC\Websocket\Kernel
 {
     protected array $handlers = [
         '/ws/test' => TestWebsocketHandler::class,

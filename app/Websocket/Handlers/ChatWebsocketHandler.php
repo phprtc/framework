@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Websocket;
+namespace App\Websocket\Handlers;
 
 use RTC\Contracts\Websocket\ConnectionInterface;
 use RTC\Contracts\Websocket\FrameInterface;

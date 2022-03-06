@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Kernel as HttpKernel;
-use App\Websocket\WSKernel;
+use App\Websocket\Kernel as WSKernel;
 use RTC\Server\Server;
 use RTC\Watcher\Watcher;
 

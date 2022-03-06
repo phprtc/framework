@@ -9,7 +9,7 @@ Route::get('/', function (RequestInterface $request) {
 });
 
 Route::get('/json', [MainController::class, 'json'])
-    ->middleware(['hello', 'test']);
+    ->middleware(['test']);
 
 Route::get('/html', [MainController::class, 'html']);
 
