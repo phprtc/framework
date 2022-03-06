@@ -3,8 +3,6 @@
 namespace App\Http;
 
 use App\Http\Middlewares\CounterMiddleware;
-use App\Http\Middlewares\GidadoMiddleware;
-use App\Http\Middlewares\HelloMiddleware;
 use App\Http\Middlewares\TestRouteMiddleware;
 use RTC\Contracts\Http\HttpHandlerInterface;
 
