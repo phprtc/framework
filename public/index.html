@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="/js/reactificate-0.1.0.js"></script>
+</head>
+<body>
+
+<div id="chat-messages" style="float: left;"></div>
+<div style="float: right;">
+    <form method="post" id="form-send-message">
+        <textarea name="message"></textarea>
+        <button type="submit">Send</button>
+    </form>
+</div>
+
+
+<script>
+    const wsChat = new Reactificate.Websocket('ws://localhost:9600/ws/chat').connect();
+    const elChatMessages = document.getElementById('chat-messages');
+
+    elChatMessages.innerHTML = "CHAT SERVER:";
+
+    wsChat.setReconnectionInterval(5000);
+
+    wsChat.onOpen(() => console.log('chat connection opened'));
+    wsChat.onClose(() => console.log('chat connection closed'));
+
+    wsChat.onMessage((message) => {
+        if ('conn.rejected' === message.command) {
+            wsChat.close();
+        }
+
+        const div = document.createElement('div');
+        div.innerHTML = message.data;
+
+        window.scroll(0, elChatMessages.scrollHeight)
+
+        console.log(message);
+
+        elChatMessages.append(div)
+    });
+
+    document.getElementById('form-send-message').onsubmit = function (e) {
+        e.preventDefault();
+
+        wsChat.send('chat.message', this.querySelector('textarea').value);
+    }
+</script>
+</body>
+</html>
