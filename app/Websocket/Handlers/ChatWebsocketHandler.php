@@ -2,38 +2,56 @@
 
 namespace App\Websocket\Handlers;
 
+use RTC\Console\Console;
+use RTC\Contracts\Server\ServerInterface;
 use RTC\Contracts\Websocket\ConnectionInterface;
 use RTC\Contracts\Websocket\FrameInterface;
+use RTC\Websocket\Room;
 use RTC\Websocket\WebsocketHandler;
 use Throwable;
-use function dump;
 
 class ChatWebsocketHandler extends WebsocketHandler
 {
+    protected Room $room;
+    protected Console $console;
+
+
+    public function __construct(ServerInterface $server, int $size = 2048)
+    {
+        parent::__construct($server, $size);
+
+        $this->room = new Room($this->server, '2go', 1024);
+        $this->console = new Console();
+        $this->console->setPrefix('[WS Chat] ');
+    }
+
     public function onMessage(ConnectionInterface $connection, FrameInterface $frame): void
     {
-        dump("Chat Server: message({$frame->getPayload()->getRaw()})");
+        $this->console->comment("Message: {$frame->getPayload()->getRaw()}");
 
-        if ($frame->getCommand() == 'chat.message') {
+        if ($frame->getCommand() == 'chat.room.join') {
+            $connection->send('chat.forward', strtoupper($frame->getMessage()));
+        }
+
+        if ($frame->getCommand() == 'chat.room.message') {
             $connection->send('chat.forward', strtoupper($frame->getMessage()));
         }
     }
 
     public function onOpen(ConnectionInterface $connection): void
     {
-        //Timer::tick(2300, fn() => $connection->send('chat.time', date('H:i:s')));
         $this->addConnection($connection);
-        $this->getConnection($connection->getIdentifier());
-        dump("Chat Server: connection opened({$connection->getIdentifier()})");
+        $this->console->info("Connection opened: {$connection->getIdentifier()}");
     }
 
     public function onClose(ConnectionInterface $connection): void
     {
-        dump("Chat Server: connection closed({$connection->getIdentifier()})");
+        $this->room->remove($connection);
+        $this->console->writeln("Connection closed: {$connection->getIdentifier()}");
     }
 
     public function onError(ConnectionInterface $connection, Throwable $exception): void
     {
-        dump("Chat Server: error({$connection->getIdentifier()}) \n Exception $exception");
+        $this->console->error("Error: {$connection->getIdentifier()} \n Exception: $exception");
     }
 }

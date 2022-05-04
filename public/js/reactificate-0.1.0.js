@@ -1,6 +1,6 @@
-window.Reactificate = window.Reactificate || {};
+window.RTC = window.RTC || {};
 
-window.Reactificate.EventEmitter = (function () {
+window.RTC.EventEmitter = (function () {
     function EventEmitter() {
         let events = {
             'on': {},
@@ -45,7 +45,7 @@ window.Reactificate.EventEmitter = (function () {
     return EventEmitter;
 })();
 
-window.Reactificate.Notification = (function () {
+window.RTC.Notification = (function () {
     function RNotification() {
         let _this = this;
         let _notification;
@@ -92,11 +92,11 @@ window.Reactificate.Notification = (function () {
     return RNotification;
 })();
 
-window.Reactificate.Websocket = (function () {
+window.RTC.Websocket = (function () {
     function Websocket(wsUri, options = []) {
 
         let _this = this;
-        let _event = new Reactificate.EventEmitter();
+        let _event = new RTC.EventEmitter();
         /**@returns WebSocket**/
         let websocket;
         let reconnectionInterval = 1000;
@@ -219,7 +219,7 @@ window.Reactificate.Websocket = (function () {
         this.onCommand = (command, listener) => _event.on('command.' + command, listener);
 
         /**
-         * Listens to Reactificate socket command
+         * Listens to RTC socket command
          *
          * @param listener
          */
@@ -356,8 +356,8 @@ window.Reactificate.Websocket = (function () {
 
                     _event.dispatch()
 
-                    if ('Reactificate.Notification' === payload.command) {
-                        (new Reactificate.Notification()).send(payload.data);
+                    if ('RTC.Notification' === payload.command) {
+                        (new RTC.Notification()).send(payload.data);
                     }
                 }
             });
@@ -386,8 +386,8 @@ window.Reactificate.Websocket = (function () {
                     // Dispatch filtered command event
                     _event.dispatch('command.' + payload.command, [payload]);
 
-                    if ('Reactificate.Notification' === payload.command) {
-                        (new Reactificate.Notification()).send(payload.data);
+                    if ('RTC.Notification' === payload.command) {
+                        (new RTC.Notification()).send(payload.data);
                     }
                 }
             });

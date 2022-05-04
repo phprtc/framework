@@ -15,7 +15,7 @@ Route::get('/html', [MainController::class, 'html']);
 
 Route::get('/closure', function (RequestInterface $request) {
     $request->getResponse()->json([
-        'time' => time(),
-        'id' => uniqid(true)
+        'time' => microtime(true),
+        'id' => uniqid(more_entropy: true)
     ]);
 });

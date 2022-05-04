@@ -10,8 +10,7 @@ class Kernel extends \RTC\Http\Kernel
 {
     protected HttpHandlerInterface $handler;
 
-    protected array $httpMiddlewares = [
-        CounterMiddleware::class,
+    protected array $middlewares = [
     ];
 
     protected array $routeMiddlewares = [
