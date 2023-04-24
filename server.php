@@ -13,10 +13,12 @@ $env = Dotenv::createImmutable(__DIR__)->load();
 try {
     Server::create($env['SERVER_HOST'], $env['SERVER_PORT'])
         ->setDocumentRoot(__DIR__ . '/public')
+        ->setPidFile($_ENV['SERVER_PID_FILE'])
         ->setHttpKernel(HttpKernel::class)
         ->setWebsocketKernel(WSKernel::class)
         ->onStart(function (\Swoole\Http\Server $server) use ($env) {
 
+            // Monitor filesystem changes for hot code reloading
             if ('development' == strtolower($env['APP_ENV'])) {
                 Watcher::create()
                     ->addPath(__DIR__ . '/app')

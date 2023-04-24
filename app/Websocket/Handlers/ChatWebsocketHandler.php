@@ -4,6 +4,7 @@ namespace App\Websocket\Handlers;
 
 use RTC\Console\Console;
 use RTC\Contracts\Server\ServerInterface;
+use RTC\Contracts\Websocket\EventInterface;
 use RTC\Contracts\Websocket\ConnectionInterface;
 use RTC\Contracts\Websocket\FrameInterface;
 use RTC\Websocket\Room;
@@ -20,22 +21,27 @@ class ChatWebsocketHandler extends WebsocketHandler
     {
         parent::__construct($server, $size);
 
-        $this->room = new Room($this->server, '2go', 1024);
+        $this->room = new Room( '2go', 1024);
         $this->console = new Console();
         $this->console->setPrefix('[WS Chat] ');
     }
 
+    public function onEvent(ConnectionInterface $connection, EventInterface $event): void
+    {
+        $this->console->comment("Event: {$event->getEvent()} -> {$event->getFrame()->getRaw()}");
+
+        if ($event->eventIs('chat.room.join')) {
+            $this->console->writeln('Joined');
+            $connection->send('chat.forward', strtoupper($event->getMessage()));
+        }
+
+        if ($event->eventIs('chat.room.message')) {
+            $connection->send('chat.forward', strtoupper($event->getMessage()));
+        }
+    }
+
     public function onMessage(ConnectionInterface $connection, FrameInterface $frame): void
     {
-        $this->console->comment("Message: {$frame->getPayload()->getRaw()}");
-
-        if ($frame->getCommand() == 'chat.room.join') {
-            $connection->send('chat.forward', strtoupper($frame->getMessage()));
-        }
-
-        if ($frame->getCommand() == 'chat.room.message') {
-            $connection->send('chat.forward', strtoupper($frame->getMessage()));
-        }
     }
 
     public function onOpen(ConnectionInterface $connection): void

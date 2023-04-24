@@ -1,6 +1,8 @@
 /.idea/
 /vendor/
+/node_modules
 
 composer.lock
 
 /.env
+/.pid

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script src="/js/reactificate-0.1.0.js"></script>
+    <script src="/js/phprtc-ws-client.js"></script>
 </head>
 <body>
 
@@ -17,7 +17,7 @@
 
 
 <script>
-    const wsChat = new RTC.Websocket('ws://localhost:9600/ws/chat').connect();
+    const wsChat = new RTC_Websocket("ws://localhost:9700/ws/chat", {}).connect();
     const elChatMessages = document.getElementById('chat-messages');
 
     elChatMessages.innerHTML = "CHAT SERVER:";
@@ -27,7 +27,7 @@
     wsChat.onOpen(() => console.log('chat connection opened'));
     wsChat.onClose(() => console.log('chat connection closed'));
 
-    wsChat.onMessage((message) => {
+    wsChat.onAnyEvent((message) => {
         if ('conn.rejected' === message.command) {
             wsChat.close();
             return;
