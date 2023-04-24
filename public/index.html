@@ -23,7 +23,7 @@
 
 
 <script>
-    const protocol = window.location.protocol === 'https' ? 'wss' : 'ws';
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const wsChat = new RTC_Websocket(`${protocol}://${window.location.hostname}/ws/chat`, {}).connect();
     const elChatMessages = document.getElementById('chat-messages');
     const displayMessage = function (event) {
