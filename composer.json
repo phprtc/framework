@@ -32,11 +32,5 @@
 		"phprtc/http": "dev-master",
 		"phprtc/console": "dev-main",
 		"vlucas/phpdotenv": "^5.4"
-	},
-	"repositories": [
-		{
-			"type": "composer",
-			"url": "https://phprtc.repo.repman.io"
-		}
-	]
+	}
 }

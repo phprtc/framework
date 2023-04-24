@@ -4,8 +4,8 @@ namespace App\Websocket\Handlers;
 
 use RTC\Console\Console;
 use RTC\Contracts\Server\ServerInterface;
-use RTC\Contracts\Websocket\EventInterface;
 use RTC\Contracts\Websocket\ConnectionInterface;
+use RTC\Contracts\Websocket\EventInterface;
 use RTC\Contracts\Websocket\FrameInterface;
 use RTC\Websocket\Room;
 use RTC\Websocket\WebsocketHandler;
@@ -15,13 +15,15 @@ class ChatWebsocketHandler extends WebsocketHandler
 {
     protected Room $room;
     protected Console $console;
+    private string $startDate;
 
 
     public function __construct(ServerInterface $server, int $size = 2048)
     {
         parent::__construct($server, $size);
 
-        $this->room = new Room( '2go', 1024);
+        $this->startDate = date('Y-m-d H:i:s');
+        $this->room = new Room('2go', 1024);
         $this->console = new Console();
         $this->console->setPrefix('[WS Chat] ');
     }
@@ -36,6 +38,7 @@ class ChatWebsocketHandler extends WebsocketHandler
         }
 
         if ($event->eventIs('chat.room.message')) {
+            foreach ($this->getConnection())
             $connection->send('chat.forward', strtoupper($event->getMessage()));
         }
     }
@@ -47,6 +50,11 @@ class ChatWebsocketHandler extends WebsocketHandler
     public function onOpen(ConnectionInterface $connection): void
     {
         $this->addConnection($connection);
+        $connection->send(
+            event: 'welcome',
+            data: sprintf('Welcome<br/>This server has been running since %s.', $this->startDate)
+        );
+
         $this->console->info("Connection opened: {$connection->getIdentifier()}");
     }
 
