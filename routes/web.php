@@ -5,7 +5,7 @@ use RTC\Contracts\Http\RequestInterface;
 use RTC\Http\Router\Route;
 
 Route::get('/', function (RequestInterface $request) {
-    $request->getResponse()->html(file_get_contents(dirname(__DIR__) . '/public/index.html'));
+    $request->getResponse()->serveHtmlFile(dirname(__DIR__) . '/public/index.html');
 });
 
 Route::get('/json', [MainController::class, 'json'])
