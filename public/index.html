@@ -23,7 +23,7 @@
 
 
 <script>
-    const wsChat = new RTC_Websocket("ws://localhost:9700/ws/chat", {}).connect();
+    const wsChat = new RTC_Websocket(`ws://${window.location.hostname}/ws/chat`, {}).connect();
     const elChatMessages = document.getElementById('chat-messages');
     const displayMessage = function (event) {
         const div = document.createElement('div');
