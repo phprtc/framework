@@ -4,9 +4,12 @@ use App\Http\Controllers\MainController;
 use RTC\Contracts\Http\RequestInterface;
 use RTC\Http\Router\Route;
 
-Route::get('/', function (RequestInterface $request) {
+$homePage = function (RequestInterface $request) {
     $request->getResponse()->serveHtmlFile(dirname(__DIR__) . '/public/index.html');
-});
+};
+
+Route::get('/', $homePage);
+Route::get('/index.php', $homePage);
 
 Route::get('/json', [MainController::class, 'json'])
     ->middleware(['test']);
