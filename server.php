@@ -13,7 +13,7 @@ $env = Dotenv::createImmutable(__DIR__)->load();
 try {
     $server = Server::create($env['SERVER_HOST'], $env['SERVER_PORT'])
         ->setDocumentRoot(__DIR__ . '/public')
-        ->setPidFile($_ENV['SERVER_PID_FILE'])
+        ->setPidFile(__DIR__ . '/.pid')
         ->setHttpKernel(HttpKernel::class)
         ->setWebsocketKernel(WSKernel::class)
         ->onStart(function (\Swoole\Http\Server $server) use ($env) {
@@ -31,7 +31,11 @@ try {
             echo "Server started at http://$server->host:$server->port\n";
         });
 
-    if ($_ENV['SERVER_DAEMONIZE']) {
+    $server->setLogOption(
+        filePath: __DIR__ . '/storage/logs/phprtc.log',
+    );
+
+    if ('true' == $env['SERVER_DAEMONIZE']) {
         $server->daemonize();
     }
 

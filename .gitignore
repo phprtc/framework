@@ -6,3 +6,5 @@ composer.lock
 
 /.env
 /.pid
+/storage/logs/*.log
+/storage/logs/*.log*
