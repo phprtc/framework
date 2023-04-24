@@ -11,7 +11,7 @@ require __DIR__ . '/vendor/autoload.php';
 $env = Dotenv::createImmutable(__DIR__)->load();
 
 try {
-    Server::create($env['SERVER_HOST'], $env['SERVER_PORT'])
+    $server = Server::create($env['SERVER_HOST'], $env['SERVER_PORT'])
         ->setDocumentRoot(__DIR__ . '/public')
         ->setPidFile($_ENV['SERVER_PID_FILE'])
         ->setHttpKernel(HttpKernel::class)
@@ -29,8 +29,13 @@ try {
             }
 
             echo "Server started at http://$server->host:$server->port\n";
-        })
-        ->run();
+        });
+
+    if ($_ENV['SERVER_DAEMONIZE']) {
+        $server->daemonize();
+    }
+
+    $server->run();
 } catch (Throwable $e) {
     console()->error($e);
 }
