@@ -7,16 +7,19 @@ use RTC\Contracts\Server\ServerInterface;
 use RTC\Contracts\Websocket\ConnectionInterface;
 use RTC\Contracts\Websocket\EventInterface;
 use RTC\Contracts\Websocket\FrameInterface;
-use RTC\Websocket\Exceptions\RoomOverflowException;
-use RTC\Websocket\Room;
+use RTC\Contracts\Websocket\RoomInterface;
 use RTC\Websocket\WebsocketHandler;
 use Throwable;
 
 class ChatWebsocketHandler extends WebsocketHandler
 {
-    protected Room $room;
     protected Console $console;
     private string $startDate;
+
+    /**
+     * @var RoomInterface[] $rooms
+     */
+    private array $rooms;
 
 
     public function __construct(ServerInterface $server, int $size = 2048)
@@ -24,7 +27,6 @@ class ChatWebsocketHandler extends WebsocketHandler
         parent::__construct($server, $size);
 
         $this->startDate = date('Y-m-d H:i:s');
-        $this->room = new Room('2go', 1024);
         $this->console = new Console();
         $this->console->setPrefix('[WS Chat] ');
     }
@@ -33,19 +35,15 @@ class ChatWebsocketHandler extends WebsocketHandler
     {
         $this->console->comment("Event: {$event->getEvent()} -> {$event->getFrame()->getRaw()}");
 
-        if ($event->eventIs('room.join')) {
-            $this->console->writeln('Joined');
+//        if ($event->eventIs('room.message')) {
+//            $this->room->sendAsClient(
+//                connection: $connection,
+//                event: 'room.message',
+//                message: $event->getMessage(),
+//                meta: ['sender_name' => $connection->getIdentifier()]
+//            );
+//        }
 
-        }
-
-        if ($event->eventIs('room.message')) {
-            $this->room->sendAsClient(
-                connection: $connection,
-                event: 'room.message',
-                message: $event->getMessage(),
-                meta: ['sender_name' => $connection->getIdentifier()]
-            );
-        }
     }
 
     public function onMessage(ConnectionInterface $connection, FrameInterface $frame): void
@@ -55,16 +53,10 @@ class ChatWebsocketHandler extends WebsocketHandler
     /**
      * @param ConnectionInterface $connection
      * @return void
-     * @throws RoomOverflowException
      */
     public function onOpen(ConnectionInterface $connection): void
     {
         $this->addConnection($connection);
-
-        $this->room->add(
-            connection: $connection,
-            joinedMessage: sprintf('<b><i>%s</i></b> joined this chat', $connection->getIdentifier())
-        );
 
         $connection->send(
             event: 'welcome',
@@ -78,7 +70,6 @@ class ChatWebsocketHandler extends WebsocketHandler
 
     public function onClose(ConnectionInterface $connection): void
     {
-        $this->room->remove($connection);
         $this->console->writeln("Connection closed: {$connection->getIdentifier()}");
     }
 

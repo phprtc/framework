@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Title</title>
     <script src="/js/phprtc-ws-client.js"></script>
     <style>
@@ -15,58 +16,86 @@
 
 <div id="chat-messages" style="float: left;"></div>
 <div style="float: right;">
-    <form method="post" id="form-send-message">
-        <textarea name="message"></textarea>
-        <button type="submit">Send</button>
-    </form>
+    <fieldset id="fieldset-room">
+        <legend>Choose Room</legend>
+        <form method="post" id="form-choose-room">
+            <input name="room" value="phprtc">
+            <button type="submit">Enter</button>
+        </form>
+    </fieldset>
+
+    <fieldset id="fieldset-message" style="display: none">
+        <legend>Message</legend>
+        <form method="post" id="form-send-message">
+            <textarea name="message"></textarea>
+            <button type="submit">Send</button>
+        </form>
+    </fieldset>
 </div>
 
 
 <script>
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const wsChat = new RTC_Websocket(`${protocol}://${window.location.hostname}/ws/chat`, {}).connect();
-    const elChatMessages = document.getElementById('chat-messages');
-    const displayMessage = function (event) {
-        const div = document.createElement('div');
-        div.innerHTML = event.data.message;
-        window.scroll(0, elChatMessages.scrollHeight);
-        elChatMessages.append(div)
+
+    const initRoom = function (roomName) {
+        const elChatMessages = document.getElementById('chat-messages');
+        const room = new RTC_Room(`${protocol}://${window.location.host}/ws/chat`, roomName);
+        const displayMessage = function (event) {
+            const div = document.createElement('div');
+            console.log('displayin')
+            div.innerHTML = event.data.message;
+            window.scroll(0, elChatMessages.scrollHeight);
+            elChatMessages.append(div)
+        }
+
+        elChatMessages.innerHTML = "CHAT SERVER:";
+
+        room.getConnection().setReconnectionInterval(5000);
+
+        room.getConnection().onOpen(() => console.log('chat connection opened'));
+        room.getConnection().onClose(() => console.log('chat connection closed'));
+
+        room.getConnection().onMessage(message => {
+            console.log(message);
+        });
+
+        room.onEvent('welcome', message => {
+            const div = document.createElement('div');
+            div.innerHTML = message.data.message;
+            window.scroll(0, elChatMessages.scrollHeight);
+            elChatMessages.append(div)
+        });
+
+        room.onEvent('join', displayMessage);
+        room.onEvent('leave', displayMessage);
+        room.onEvent('message', event => {
+            event.data.message = `<span class="sender">@${event.meta['sender_name']}:</span> ${event.data.message}`
+            displayMessage(event)
+        });
+
+        room.onEvent('conn.rejected', () => {
+            room.close()
+        });
+
+        document.getElementById('fieldset-room').style.display = 'none'
+        document.getElementById('fieldset-message').style.display = 'block'
+
+        document.getElementById('form-send-message').onsubmit = function (e) {
+            e.preventDefault();
+            const textarea = this.querySelector('textarea')
+            const message = textarea.value
+            textarea.value = ''
+
+            room.send(message);
+        }
     }
 
-    elChatMessages.innerHTML = "CHAT SERVER:";
-
-    wsChat.setReconnectionInterval(5000);
-
-    wsChat.onOpen(() => console.log('chat connection opened'));
-    wsChat.onClose(() => console.log('chat connection closed'));
-
-    wsChat.onMessage(message => {
-        console.log(message);
-    });
-
-    wsChat.onEvent('welcome', message => {
-        const div = document.createElement('div');
-        div.innerHTML = message.data.message;
-        window.scroll(0, elChatMessages.scrollHeight);
-        elChatMessages.append(div)
-    });
-
-    wsChat.onEvent('room.join', displayMessage);
-    wsChat.onEvent('room.leave', displayMessage);
-    wsChat.onEvent('room.message', event => {
-        event.data.message = `<span class="sender">@${event.meta['sender_name']}:</span> ${event.data.message}`
-        displayMessage(event)
-    });
-
-    wsChat.onEvent('conn.rejected', () => {
-        wsChat.close()
-    });
-
-    document.getElementById('form-send-message').onsubmit = function (e) {
+    document.getElementById('form-choose-room').onsubmit = function (e) {
         e.preventDefault();
-
-        wsChat.send('room.message', this.querySelector('textarea').value);
+        const input = this.querySelector('input[name="room"]')
+        initRoom(input.value)
     }
+
 </script>
 </body>
 </html>
