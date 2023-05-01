@@ -19,7 +19,8 @@
     <fieldset id="fieldset-room">
         <legend>Choose Room</legend>
         <form method="post" id="form-choose-room">
-            <input name="room" value="phprtc">
+            <input name="username" value="Ahmard" placeholder="Username" required>
+            <input name="room" value="phprtc" placeholder="Room" required>
             <button type="submit">Enter</button>
         </form>
     </fieldset>
@@ -39,10 +40,15 @@
 
     const initRoom = function (roomName) {
         const elChatMessages = document.getElementById('chat-messages');
-        const room = new RTC_Room(`${protocol}://${window.location.host}/ws/chat`, roomName);
+        const websocket = RTC_Websocket.create(`${protocol}://${window.location.host}/ws/chat`, [], {
+            username: document.querySelector('input[name="username"]').value
+        });
+
+        const room = websocket.joinRoom(roomName)
+        const universal = websocket.joinRoom('universal')
+
         const displayMessage = function (event) {
             const div = document.createElement('div');
-            console.log('displayin')
             div.innerHTML = event.data.message;
             window.scroll(0, elChatMessages.scrollHeight);
             elChatMessages.append(div)
@@ -50,30 +56,45 @@
 
         elChatMessages.innerHTML = "CHAT SERVER:";
 
-        room.getConnection().setReconnectionInterval(5000);
+        websocket.setReconnectionInterval(5000);
 
-        room.getConnection().onOpen(() => console.log('chat connection opened'));
-        room.getConnection().onClose(() => console.log('chat connection closed'));
-
-        room.getConnection().onMessage(message => {
-            console.log(message);
+        websocket.onOpen(() => {
+            console.log('ws connection opened')
         });
 
-        room.onEvent('welcome', message => {
+        websocket.onClose(() => console.log('ws connection closed'));
+        websocket.onMessage(message => console.log(message));
+
+        const processMessage = function (event, customMessage = null) {
+            const user_name = event.meta.user_info
+                ? event.meta.user_info.username
+                : 'You';
+
+            event.data.message = `<i>@${user_name} ${customMessage ?? event.data.message}</i> `
+            displayMessage(event)
+        }
+
+        room.on('welcome', message => {
             const div = document.createElement('div');
             div.innerHTML = message.data.message;
             window.scroll(0, elChatMessages.scrollHeight);
             elChatMessages.append(div)
         });
 
-        room.onEvent('join', displayMessage);
-        room.onEvent('leave', displayMessage);
-        room.onEvent('message', event => {
-            event.data.message = `<span class="sender">@${event.meta['sender_name']}:</span> ${event.data.message}`
+        room.on('joined', displayMessage);
+        room.on('user_left', e => processMessage(e, 'left this room'));
+        room.on('user_joined', e => processMessage(e, 'joined this room'));
+
+        room.on('message', function (event) {
+            const user_name = event.sender.info
+                ? event.sender.info.username
+                : 'You';
+
+            event.data.message = `<span class="sender">@${user_name}:</span> ${event.data.message}`
             displayMessage(event)
         });
 
-        room.onEvent('conn.rejected', () => {
+        room.on('conn.rejected', () => {
             room.close()
         });
 
