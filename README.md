@@ -1,7 +1,9 @@
 # PHP RTC Framework
 
 ## Installation
-Clone and install composer packages
+```
+composer create-project phprtc/phprtc:dev-master live-chat
+```
 
 ## Usage
 ```
