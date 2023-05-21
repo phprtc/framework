@@ -4,7 +4,6 @@ use App\Http\Kernel as HttpKernel;
 use App\Websocket\Kernel as WSKernel;
 use Dotenv\Dotenv;
 use RTC\Server\Server;
-use RTC\Watcher\Watcher;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -20,24 +19,24 @@ try {
     );
 
     $server
+        ->setRootDirectory(__DIR__)
         ->setDocumentRoot(__DIR__ . '/public')
         ->setPidFile(__DIR__ . '/.pid')
         ->setHttpKernel(HttpKernel::class)
         ->setWebsocketKernel(WSKernel::class)
-        ->onStart(function (\Swoole\Http\Server $server) use ($env) {
-
-            // Monitor filesystem changes for hot code reloading
-            if ('development' == strtolower(strval($env['APP_ENV']))) {
-                Watcher::create()
-                    ->addPath(__DIR__ . '/app')
-                    ->addPath(__DIR__ . '/routes')
-                    ->addPath(__DIR__ . '/vendor')
-                    ->onChange(fn() => $server->reload())
-                    ->start();
-            }
-
+        ->onStart(function (\Swoole\Http\Server $server) {
             echo "Server started at http://$server->host:$server->port\n";
         });
+
+    // Monitor filesystem changes for hot code reloading
+    $server->setHotCodeReload(
+        status: 'true' == strtolower(strval($env['SERVER_HOT_CODE_RELOAD'])),
+        paths: [
+            __DIR__ . '/app',
+            __DIR__ . '/routes',
+            __DIR__ . '/vendor'
+        ]
+    );
 
     $server->setLogOption(
         filePath: __DIR__ . '/storage/logs/phprtc.log',
