@@ -15,7 +15,8 @@ try {
         port: intval($env['SERVER_PORT']),
         size: intval($env['SERVER_WS_CONNECTION_SIZE']),
         heartbeatInterval: intval($env['SERVER_WS_HEARTBEAT_INTERVAL']),
-        clientTimeout: intval($env['SERVER_WS_CLIENT_TIMEOUT'])
+        clientTimeout: intval($env['SERVER_WS_CLIENT_TIMEOUT']),
+        listeners: require __DIR__ . '/config/listeners.php',
     );
 
     $server
@@ -23,10 +24,7 @@ try {
         ->setDocumentRoot(__DIR__ . '/public')
         ->setPidFile(__DIR__ . '/.pid')
         ->setHttpKernel(HttpKernel::class)
-        ->setWebsocketKernel(WSKernel::class)
-        ->onStart(function (\Swoole\Http\Server $server) {
-            echo "Server started at http://$server->host:$server->port\n";
-        });
+        ->setWebsocketKernel(WSKernel::class);
 
     // Monitor filesystem changes for hot code reloading
     $server->setHotCodeReload(
