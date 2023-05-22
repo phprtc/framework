@@ -4,10 +4,13 @@ use App\Http\Kernel as HttpKernel;
 use App\Websocket\Kernel as WSKernel;
 use Dotenv\Dotenv;
 use RTC\Server\Server;
+use Swoole\Runtime;
 
 require __DIR__ . '/vendor/autoload.php';
 
 $env = Dotenv::createImmutable(__DIR__)->load();
+
+Runtime::enableCoroutine();
 
 try {
     $server = new Server(
