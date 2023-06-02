@@ -26,8 +26,11 @@ try {
         ->setRootDirectory(__DIR__)
         ->setDocumentRoot(__DIR__ . '/public')
         ->setPidFile(__DIR__ . '/.pid')
-        ->setHttpKernel(HttpKernel::class)
-        ->setWebsocketKernel(WSKernel::class);
+        ->setHttpKernel(HttpKernel::class);
+
+    if ('true' == $env['SERVER_ENABLE_WEBSOCKET']) {
+        $server->setWebsocketKernel(WSKernel::class);
+    }
 
     // Monitor filesystem changes for hot code reloading
     $server->setHotCodeReload(
